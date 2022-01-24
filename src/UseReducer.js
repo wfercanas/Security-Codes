@@ -11,48 +11,59 @@ const initialState = {
   recovery: false,
 };
 
+const actionTypes = {
+  ERROR: 'ERROR',
+  CONFIRM: 'CONFIRM',
+  TYPING: 'TYPING',
+  CHANGE: 'CHANGE',
+  DELETE: 'DELETE',
+  ABORT: 'ABORT',
+  RECOVERY: 'RECOVERY',
+  CONFIRMATION: 'CONFIRMATION',
+};
+
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'ERROR':
+    case actionTypes.ERROR:
       return {
         ...state,
         error: true,
         loading: false,
       };
-    case 'CONFIRM':
+    case actionTypes.CONFIRM:
       return {
         ...state,
         loading: false,
         confirmation: true,
         value: '',
       };
-    case 'TYPING':
+    case actionTypes.TYPING:
       return {
         ...state,
         error: false,
       };
-    case 'CHANGE':
+    case actionTypes.CHANGE:
       return {
         ...state,
         value: action.payload,
       };
-    case 'DELETE':
+    case actionTypes.DELETE:
       return {
         ...state,
         confirmation: false,
         recovery: true,
       };
-    case 'ABORT':
+    case actionTypes.ABORT:
       return {
         ...state,
         confirmation: false,
       };
-    case 'RECOVERY':
+    case actionTypes.RECOVERY:
       return {
         ...state,
         recovery: false,
       };
-    case 'CONFIRMATION':
+    case actionTypes.CONFIRMATION:
       return {
         ...state,
         loading: true,
@@ -65,13 +76,23 @@ const reducer = (state, action) => {
 function UseReducer({ name }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  const onError = () => dispatch({ type: actionTypes.ERROR });
+  const onConfirm = () => dispatch({ type: actionTypes.CONFIRM });
+  const onTyping = () => dispatch({ type: actionTypes.TYPING });
+  const onDelete = () => dispatch({ type: actionTypes.DELETE });
+  const onAbort = () => dispatch({ type: actionTypes.ABORT });
+  const onRecovery = () => dispatch({ type: actionTypes.RECOVERY });
+  const onChange = (newValue) =>
+    dispatch({ type: actionTypes.CHANGE, payload: newValue });
+  const onConfirmation = () => dispatch({ type: actionTypes.CONFIRMATION });
+
   useEffect(() => {
     if (state.loading) {
       setTimeout(() => {
         if (state.value !== SECURITY_CODE) {
-          dispatch({ type: 'ERROR' });
+          onError();
         } else {
-          dispatch({ type: 'CONFIRM' });
+          onConfirm();
         }
       }, 3000);
     }
@@ -79,7 +100,7 @@ function UseReducer({ name }) {
 
   useEffect(() => {
     if (!!state.error) {
-      dispatch({ type: 'TYPING' });
+      onTyping();
     }
   }, [state.value]);
 
@@ -87,21 +108,15 @@ function UseReducer({ name }) {
     return (
       <>
         <p>¿Estás seguro de eliminar Use State?</p>
-        <button onClick={() => dispatch({ type: 'DELETE' })}>
-          Sí, eliminar
-        </button>
-        <button onClick={() => dispatch({ type: 'ABORT' })}>
-          No, me arrepentí
-        </button>
+        <button onClick={onDelete}>Sí, eliminar</button>
+        <button onClick={onAbort}>No, me arrepentí</button>
       </>
     );
   } else if (!!state.recovery) {
     return (
       <>
         <p>Has eliminado Use State</p>
-        <button onClick={() => dispatch({ type: 'RECOVERY' })}>
-          Recuperar Use State
-        </button>
+        <button onClick={onRecovery}>Recuperar Use State</button>
       </>
     );
   } else {
@@ -117,13 +132,9 @@ function UseReducer({ name }) {
         <input
           placeholder='Código de seguridad'
           value={state.value}
-          onChange={({ target }) =>
-            dispatch({ type: 'CHANGE', payload: target.value })
-          }
+          onChange={({ target }) => onChange(target.value)}
         />
-        <button onClick={() => dispatch({ type: 'CONFIRMATION' })}>
-          Comprobar
-        </button>
+        <button onClick={onConfirmation}>Comprobar</button>
       </div>
     );
   }
