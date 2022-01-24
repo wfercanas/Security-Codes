@@ -12,30 +12,20 @@ function UseState({ name }) {
     recovery: false,
   });
 
-  useEffect(() => {
-    if (state.loading) {
-      setTimeout(() => {
-        if (state.value !== SECURITY_CODE) {
-          console.log('hey!');
-          setState({ ...state, loading: false, error: true });
-        } else {
-          setState({ ...state, loading: false, confirmation: true, value: '' });
-        }
-      }, 3000);
-    }
-  }, [state.loading]);
+  const onError = () => {
+    setState({ ...state, loading: false, error: true });
+  };
 
-  useEffect(() => {
-    if (!!state.error) {
-      setState({ ...state, error: false });
-    }
-  }, [state.value]);
+  const onConfirm = () => {
+    setState({ ...state, loading: false, confirmation: true, value: '' });
+  };
 
-  const handleConfirmation = () => {
-    setState({
-      ...state,
-      loading: true,
-    });
+  const onTyping = () => {
+    setState({ ...state, error: false });
+  };
+
+  const handleChange = (newValue) => {
+    setState({ ...state, value: newValue });
   };
 
   const handleDelete = () => {
@@ -49,6 +39,31 @@ function UseState({ name }) {
   const handleRecovery = () => {
     setState({ ...state, recovery: false });
   };
+
+  const handleConfirmation = () => {
+    setState({
+      ...state,
+      loading: true,
+    });
+  };
+
+  useEffect(() => {
+    if (state.loading) {
+      setTimeout(() => {
+        if (state.value !== SECURITY_CODE) {
+          onError();
+        } else {
+          onConfirm();
+        }
+      }, 3000);
+    }
+  }, [state.loading]);
+
+  useEffect(() => {
+    if (!!state.error) {
+      onTyping();
+    }
+  }, [state.value]);
 
   if (!!state.confirmation) {
     return (
@@ -78,7 +93,7 @@ function UseState({ name }) {
         <input
           placeholder='Código de seguridad'
           value={state.value}
-          onChange={({ target }) => setState({ ...state, value: target.value })}
+          onChange={({ target }) => handleChange(target.value)}
         />
         <button onClick={handleConfirmation}>Comprobar</button>
       </div>
